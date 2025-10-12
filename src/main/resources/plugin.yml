@@ -1,0 +1,80 @@
+name: WerewolfEvent
+version: '1.0.0'
+author: "___Pumpkinn"
+main: net.pumpkin.werewolfevent.WerewolfEvent
+api-version: '1.21'
+
+commands:
+  eventinfo:
+    description: Display information about all roles
+    usage: /<command>
+  night:
+    description: Set the time to night and empower the wolves.
+    usage: /<command>
+    permission: werewolfevent.command.night
+  day:
+    description: Set the time to day and weaken the wolves.
+    usage: /<command>
+    permission: werewolfevent.command.day
+  role:
+    description: Roll for a role
+    usage: /<command>
+    permission: werewolfevent.command.role
+  see:
+    description: Use the Seer role's ability
+    usage: /<command>
+  checkrole:
+    description: Check your current role
+    usage: /<command>
+  match:
+    description: Cupid's ability to match players
+    usage: /<command>
+  laststand:
+    description: Hunter's last stand ability
+    usage: /<command>
+  reloadroleusage:
+    description: Reloads the usage of Seer, Cupid, Hunter, and All
+    usage: /<command> <role>
+    permission: werewolfevent.command.reloadroleusage
+  vote:
+    description: Vote to eliminate a player.
+    usage: /vote <player>
+  startvote:
+    description: Start a new voting session.
+    usage: /startvote
+    permission: vote.start
+  seerole:
+    description: See the role of another player
+    usage: /seerole <player>
+    permission: rollsee.view
+
+
+
+permissions:
+  werewolfevent.command.night:
+    description: Allows setting the time to night and empowering wolves.
+    default: op
+  werewolfevent.command.day:
+    description: Allows setting the time to day and weakening wolves.
+    default: op
+  werewolfevent.command.roll:
+    description: Allows a OP to roll for everyone.
+    default: op
+  werewolfevent.command.reloadroleusage:
+    description: Allows reloading usage for Seer, Cupid, Hunter, and All.
+    default: op
+  werewolfevent.command.giveroll:
+    description: Gives Role To Players The Roles Are Seer, Cupid, Hunter, and All.
+    default: op
+  werewolfevent.command.checkrole:
+    description: Allows checking of player's current role.
+    default: true
+  werewolfevent.command.match:
+    description: Allows Cupid to match players.
+    default: true
+  vote.start:
+    description: Allows the player to start a voting session.
+    default: op
+  werewolfevent.view:
+    description: Allows the player to see the roles of others.
+    default: op
