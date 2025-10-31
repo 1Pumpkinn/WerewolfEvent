@@ -11,7 +11,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.EventHandler;
 import java.util.*;
 
 public class RoleCommand implements CommandExecutor, Listener {
@@ -45,39 +44,68 @@ public class RoleCommand implements CommandExecutor, Listener {
     private boolean assignRandomRoles(CommandSender sender) {
         List<Player> onlinePlayers = new ArrayList<>(sender.getServer().getOnlinePlayers());
 
+        if (onlinePlayers.isEmpty()) {
+            sender.sendMessage(ChatColor.RED + "No players online to assign roles!");
+            return false;
+        }
 
         Collections.shuffle(onlinePlayers);
         playerRoles.clear();
 
         // Hardcoded role capacities
         Map<String, Integer> roleCap = new HashMap<>();
+        roleCap.put("Wolf", 1);      // Exactly one Wolf
         roleCap.put("Hunter", 1);
         roleCap.put("Seer", 1);
-        roleCap.put("Wolf", 1); // Ensuring exactly one Wolf
         roleCap.put("Cupid", 1);
         roleCap.put("Sacrifice", 1);
-        roleCap.put("Villager", Integer.MAX_VALUE); // Default role
+        roleCap.put("Villager", Integer.MAX_VALUE); // Unlimited Villagers
 
-        List<String> availableRoles = new ArrayList<>(roleCap.keySet());
+        // Create a list of available special roles (excluding Villager)
+        List<String> specialRoles = new ArrayList<>();
+        specialRoles.add("Wolf");
+        specialRoles.add("Hunter");
+        specialRoles.add("Seer");
+        specialRoles.add("Cupid");
+        specialRoles.add("Sacrifice");
 
-        // Ensure exactly one Wolf
-        Player wolfPlayer = onlinePlayers.remove(0);
-        playerRoles.put(wolfPlayer.getName(), "Wolf");
-        ChatColor wolfColor = roleColors.get("Wolf");
-        wolfPlayer.sendTitle(ChatColor.GREEN + "Your Role:", wolfColor + "Wolf", 10, 70, 20);
-        wolfPlayer.sendMessage(ChatColor.GOLD + "You have been assigned the role: " + wolfColor + "Wolf");
-        roleCap.put("Wolf", 0);
+        Collections.shuffle(specialRoles);
 
+        int specialRoleIndex = 0;
+
+        // Assign roles to all players
         for (Player player : onlinePlayers) {
-            String chosenRole = getRandomAvailableRole(availableRoles, roleCap);
+            String chosenRole;
+
+            // If we still have special roles to assign
+            if (specialRoleIndex < specialRoles.size()) {
+                chosenRole = specialRoles.get(specialRoleIndex);
+                specialRoleIndex++;
+            } else {
+                // All special roles assigned, make everyone else a Villager
+                chosenRole = "Villager";
+            }
+
+            // Assign the role
             playerRoles.put(player.getName(), chosenRole);
 
+            // Send title and message to player
             ChatColor roleColor = roleColors.getOrDefault(chosenRole, ChatColor.WHITE);
             player.sendTitle(ChatColor.GREEN + "Your Role:", roleColor + chosenRole, 10, 70, 20);
             player.sendMessage(ChatColor.GOLD + "You have been assigned the role: " + roleColor + chosenRole);
         }
 
-        sender.sendMessage(ChatColor.GREEN + "Roles have been assigned to all eligible players.");
+        sender.sendMessage(ChatColor.GREEN + "Roles have been assigned to all " + onlinePlayers.size() + " players.");
+
+        // Debug info for sender
+        if (sender.hasPermission("werewolfevent.debug")) {
+            Map<String, Integer> roleCount = new HashMap<>();
+            for (String role : playerRoles.values()) {
+                roleCount.put(role, roleCount.getOrDefault(role, 0) + 1);
+            }
+            sender.sendMessage(ChatColor.GRAY + "Role distribution: " + roleCount.toString());
+        }
+
         return true;
     }
 
@@ -86,7 +114,7 @@ public class RoleCommand implements CommandExecutor, Listener {
         String role = args[2];
 
         if (!roleColors.containsKey(role)) {
-            sender.sendMessage(ChatColor.RED + "Invalid role specified.");
+            sender.sendMessage(ChatColor.RED + "Invalid role specified. Valid roles: Hunter, Seer, Wolf, Villager, Cupid, Sacrifice");
             return false;
         }
 
@@ -103,27 +131,6 @@ public class RoleCommand implements CommandExecutor, Listener {
         sender.sendMessage(ChatColor.GREEN + "You have forced " + targetPlayerName + " into the role: " + roleColor + role);
 
         return true;
-    }
-
-    private String getRandomAvailableRole(List<String> availableRoles, Map<String, Integer> roleCap) {
-        List<String> validRoles = new ArrayList<>();
-
-        for (String role : availableRoles) {
-            if (roleCap.getOrDefault(role, 0) > 0) {
-                validRoles.add(role);
-            }
-        }
-
-        if (validRoles.isEmpty()) return "Villager"; // Default role
-
-        String chosenRole = validRoles.get(random.nextInt(validRoles.size()));
-        roleCap.put(chosenRole, roleCap.get(chosenRole) - 1);
-
-        if (roleCap.get(chosenRole) <= 0) {
-            availableRoles.remove(chosenRole);
-        }
-
-        return chosenRole;
     }
 
     public boolean hasRole(Player player) {
@@ -153,4 +160,3 @@ public class RoleCommand implements CommandExecutor, Listener {
         }
     }
 }
-
